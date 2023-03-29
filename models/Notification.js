@@ -14,3 +14,4 @@ const notificationSchema = db.define("selfservice_payment_notification",
 );
 
 module.exports = notificationSchema
+//this is to cause a git change
