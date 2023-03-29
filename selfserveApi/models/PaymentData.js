@@ -2,10 +2,10 @@ const Sequelize = require('sequelize');
 const db = require("../connection/connectDB")
 
 const PaymentDataSchema = db.define("PaymentDataSelfserves", {
-    inbound: {
+    outbound: {
         type: Sequelize.JSON,
     },
-    outbound: {
+    inbound: {
         type: Sequelize.JSON,
     },
 });

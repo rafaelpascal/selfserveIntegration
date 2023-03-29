@@ -3,7 +3,7 @@ const axios = require("axios")
 const NotificationM = require("../models/Notification")
 const sequelize = require('../connection/connectDB');
 const Payment = require("../models/Payments")
-const PaymentData = require("../models/PaymentData")
+const PaymentData = require("../models/PaymentData");
 
 
 const SelfServe = async (req, res) => {
