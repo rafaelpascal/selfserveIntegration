@@ -20,6 +20,10 @@ const SelfServe = async (req, res) => {
         'base64').toString().split(':');
     var user = auth[0];
     var pass = auth[1];
+    const paymentReferenceStrg = (len) => {
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);;
+      } 
+      console.log(paymentReferenceStrg(36));
     if (user == 'tmsmda' && pass == 'tmsmda123*') {
         const data = new Payment ({
             amount: req.body.amount,
@@ -27,7 +31,7 @@ const SelfServe = async (req, res) => {
             payerEmail:  req.body.payerEmail,
             payerPhonenumber: req.body.payerPhonenumber,
             payerIdentifier: req.body.payerIdentifier,
-            paymentReference: req.body.paymentReference,
+            paymentReference: paymentReferenceStrg(36).toUpperCase(),
             ticket_type_account_id: req.body.ticket_type_account_id,
             metaData: req.body.metaData,
             paymentDescription: req.body.paymentDescription,
@@ -67,6 +71,7 @@ const SelfServe = async (req, res) => {
     // console.log(auth);
 };
 
+
 // SELFSERVE PAYMENT NOTIFICATION
 const notificationC = async (req, res) => {
     const newNotifi = new NotificationM({
@@ -78,16 +83,20 @@ const notificationC = async (req, res) => {
     var account_name = "";
     data = req.body.eventData['paymentSourceInformation'];
     data.forEach(element => {
-        // console.log(element.bankCode);
+        // console.log(element.paymentReference);
         bank_code = element.bankCode;
+
         // account_name = element.accountName;
     });
     const paymentLogId = (len) => {
         return Math.random().toString(36).substring(2,len+2);
       }  
-    // console.log(paymentLogId(36));
+    const paymentReferenceStrg = (len) => {
+        return Math.random().toString(36).substring(2,len+2);
+      }  
+    console.log(paymentReferenceStrg(36));
     const apiPaymentData = ({
-        paymentReference: JSON.stringify(req.body.eventData['paymentReference']),
+        paymentReference: JSON.stringify(paymentReferenceStrg(36).toUpperCase()),
         PaymentLogId: JSON.stringify(paymentLogId(36).toUpperCase()),
         amountPaid: req.body.eventData['amountPaid'],
         paymentMethod: JSON.stringify(req.body.eventData['paymentMethod']),
