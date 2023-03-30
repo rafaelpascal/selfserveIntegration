@@ -71,7 +71,6 @@ const SelfServe = async (req, res) => {
     // console.log(auth);
 };
 
-
 // SELFSERVE PAYMENT NOTIFICATION
 const notificationC = async (req, res) => {
     const newNotifi = new NotificationM({
@@ -92,11 +91,12 @@ const notificationC = async (req, res) => {
         return Math.random().toString(36).substring(2,len+2);
       }  
     const paymentReferenceStrg = (len) => {
-        return Math.random().toString(36).substring(2,len+2);
+        // return Math.random().toString(36).substring(2,len+2);
+        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);;
       }  
     console.log(paymentReferenceStrg(36));
     const apiPaymentData = ({
-        paymentReference: JSON.stringify(paymentReferenceStrg(36).toUpperCase()),
+        paymentReference: JSON.stringify(req.body.eventData['paymentReference'] ),
         PaymentLogId: JSON.stringify(paymentLogId(36).toUpperCase()),
         amountPaid: req.body.eventData['amountPaid'],
         paymentMethod: JSON.stringify(req.body.eventData['paymentMethod']),
