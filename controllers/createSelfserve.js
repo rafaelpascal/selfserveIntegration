@@ -4,6 +4,7 @@ const NotificationM = require("../models/Notification")
 const sequelize = require('../connection/connectDB');
 const Payment = require("../models/Payments")
 const PaymentData = require("../models/PaymentData");
+require("dotenv").config();
 
 
 const SelfServe = async (req, res) => {
@@ -23,8 +24,10 @@ const SelfServe = async (req, res) => {
     const paymentReferenceStrg = (len) => {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);;
       } 
-      console.log(paymentReferenceStrg(36));
-    if (user == 'tmsmda' && pass == 'tmsmda123*') {
+    //   console.log(paymentReferenceStrg(36));
+    //   console.log(process.env.APP_USERNAME);
+    //   console.log(process.env.PASSWORD);
+    if (user == process.env.APP_USERNAME && pass == process.env.PASSWORD) {
         const data = new Payment ({
             amount: req.body.amount,
             payerName: req.body.payerName,
@@ -39,7 +42,7 @@ const SelfServe = async (req, res) => {
             Callback_url: req.body.Callback_url
         })
         try {
-           const response = await axios.post("https://demo.teticket.ng/api/AgentPurchase",         
+           const response = await axios.post(process.env.SELFSERVE_ENDPOINT,         
             data, {
                 auth: {
                     username: user,
@@ -84,7 +87,6 @@ const notificationC = async (req, res) => {
     data.forEach(element => {
         // console.log(element.paymentReference);
         bank_code = element.bankCode;
-
         // account_name = element.accountName;
     });
     const paymentLogId = (len) => {
