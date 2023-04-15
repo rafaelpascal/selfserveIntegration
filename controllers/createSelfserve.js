@@ -5,9 +5,10 @@ const sequelize = require('../connection/connectDB');
 const Payment = require("../models/Payments")
 const PaymentData = require("../models/PaymentData");
 require("dotenv").config();
-
+const Logs = require("../models/Logs")
 
 const SelfServe = async (req, res) => {
+    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress;
     var authheader = req.headers.authorization;
     // console.log(req.headers);
     if (!authheader) {
@@ -15,7 +16,7 @@ const SelfServe = async (req, res) => {
         res.setHeader('WWW-Authenticate', 'Basic');
         err.status = 401;
         // return next(err)
-        res.status(401).json({message: 'You are not authenticated!'})
+        res.status(401).json({ message: 'You are not authenticated!' })
     }
     var auth = new Buffer.from(authheader.split(' ')[1],
         'base64').toString().split(':');
@@ -23,15 +24,15 @@ const SelfServe = async (req, res) => {
     var pass = auth[1];
     const paymentReferenceStrg = (len) => {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);;
-      } 
+    }
     //   console.log(paymentReferenceStrg(36));
     //   console.log(process.env.APP_USERNAME);
     //   console.log(process.env.PASSWORD);
     if (user == process.env.APP_USERNAME && pass == process.env.PASSWORD) {
-        const data = new Payment ({
+        const data = new Payment({
             amount: req.body.amount,
             payerName: req.body.payerName,
-            payerEmail:  req.body.payerEmail,
+            payerEmail: req.body.payerEmail,
             payerPhonenumber: req.body.payerPhonenumber,
             payerIdentifier: req.body.payerIdentifier,
             paymentReference: paymentReferenceStrg(36).toUpperCase(),
@@ -42,40 +43,44 @@ const SelfServe = async (req, res) => {
             Callback_url: req.body.Callback_url
         })
         try {
-           const response = await axios.post(process.env.SELFSERVE_ENDPOINT,         
-            data, {
+            const response = await axios.post(process.env.SELFSERVE_ENDPOINT,
+                data, {
                 auth: {
                     username: user,
                     password: pass
                 }
             });
-    
             // console.log(response.data.responseCode);
             if (response.data.responseCode === '99') {
-                res.status(409).json({message: "Duplicate payment reference"})
-            } else {            
-                await data.save();
+                res.status(409).json({ message: "Duplicate payment reference" })
+            } else {
+                const savedData = await data.save();
                 const newPaymentData = new PaymentData({
                     inbound: data,
                     outbound: response.data,
                 })
                 await newPaymentData.save()
+                Logs.create({ipaddress: IP, payload: data, success: savedData })
                 return res.status(200).json({ message: response.data });
             }
         } catch (err) {
+            const errMessage = err.message
+            console.log('errMessage', errMessage);
             res.status(500).json({ message: err });
+            Logs.create({ipaddress: IP, payload: data, error: errMessage })
         }
     } else {
         var err = new Error('You are not authenticated!');
         res.setHeader('WWW-Authenticate', 'Basic');
         err.status = 401;
-        res.status(401).json({message: 'You are not authenticated!'})
+        res.status(401).json({ message: 'You are not authenticated!' })
     }
     // console.log(auth);
 };
 
 // SELFSERVE PAYMENT NOTIFICATION
 const notificationC = async (req, res) => {
+    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress;
     const newNotifi = new NotificationM({
         eventData: req.body.eventData,
         eventType: req.body.eventType
@@ -90,15 +95,15 @@ const notificationC = async (req, res) => {
         // account_name = element.accountName;
     });
     const paymentLogId = (len) => {
-        return Math.random().toString(36).substring(2,len+2);
-      }  
+        return Math.random().toString(36).substring(2, len + 2);
+    }
     const paymentReferenceStrg = (len) => {
         // return Math.random().toString(36).substring(2,len+2);
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);;
-      }  
+    }
     console.log(paymentReferenceStrg(36));
     const apiPaymentData = ({
-        paymentReference: JSON.stringify(req.body.eventData['paymentReference'] ),
+        paymentReference: JSON.stringify(req.body.eventData['paymentReference']),
         PaymentLogId: JSON.stringify(paymentLogId(36).toUpperCase()),
         amountPaid: req.body.eventData['amountPaid'],
         paymentMethod: JSON.stringify(req.body.eventData['paymentMethod']),
@@ -122,11 +127,13 @@ const notificationC = async (req, res) => {
             data: {
                 newNotification,
             },
-
         });
-
+        Logs.create({ ipaddress: IP, payload: apiPaymentData, success: newNotification })
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+        const errMessage = error.message
+        console.log('errMessage', errMessage);
+        Logs.create({ ipaddress: IP, payload: apiPaymentData, error: errMessage })
     }
     // console.log(apiPaymentData);
 }
