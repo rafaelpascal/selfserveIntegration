@@ -1,12 +1,8 @@
 const Sequelize = require('sequelize');
 const db = require("../connection/connectDB")
 
-//THE CATEGORY SCHEMA
 const logs = db.define("Logs",
     {
-        // url:{
-        //     type: Sequelize.STRING,
-        // },
         ipaddress:{
             type: Sequelize.STRING,
         },

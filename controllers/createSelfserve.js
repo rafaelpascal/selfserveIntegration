@@ -5,10 +5,10 @@ const sequelize = require('../connection/connectDB');
 const Payment = require("../models/Payments")
 const PaymentData = require("../models/PaymentData");
 require("dotenv").config();
-const Logs = require("../models/Logs")
+const Logs = require("../models/Logs") //<---import the Log here
 
 const SelfServe = async (req, res) => {
-    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress;
+    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress; //<--Add the IP here
     var authheader = req.headers.authorization;
     // console.log(req.headers);
     if (!authheader) {
@@ -60,14 +60,14 @@ const SelfServe = async (req, res) => {
                     outbound: response.data,
                 })
                 await newPaymentData.save()
-                Logs.create({ipaddress: IP, payload: data, success: savedData })
+                Logs.create({ipaddress: IP, payload: data, success: savedData }) //<-LOG SUCCESS
                 return res.status(200).json({ message: response.data });
             }
         } catch (err) {
             const errMessage = err.message
             console.log('errMessage', errMessage);
             res.status(500).json({ message: err });
-            Logs.create({ipaddress: IP, payload: data, error: errMessage })
+            Logs.create({ipaddress: IP, payload: data, error: errMessage }) //<- LOG ERROR
         }
     } else {
         var err = new Error('You are not authenticated!');
@@ -78,9 +78,10 @@ const SelfServe = async (req, res) => {
     // console.log(auth);
 };
 
+
 // SELFSERVE PAYMENT NOTIFICATION
 const notificationC = async (req, res) => {
-    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress;
+    const IP = req.headers['x-real-ip'] || req.socket.remoteAddress; //<---THE SAME FOR NOTIFICATION
     const newNotifi = new NotificationM({
         eventData: req.body.eventData,
         eventType: req.body.eventType
@@ -128,12 +129,12 @@ const notificationC = async (req, res) => {
                 newNotification,
             },
         });
-        Logs.create({ ipaddress: IP, payload: apiPaymentData, success: newNotification })
+        Logs.create({ ipaddress: IP, payload: apiPaymentData, success: newNotification }) //<-- LOG SUCCESS
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
         const errMessage = error.message
         console.log('errMessage', errMessage);
-        Logs.create({ ipaddress: IP, payload: apiPaymentData, error: errMessage })
+        Logs.create({ ipaddress: IP, payload: apiPaymentData, error: errMessage }) //<---LOG ERROR
     }
     // console.log(apiPaymentData);
 }
