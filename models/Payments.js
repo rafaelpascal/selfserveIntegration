@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 const db = require("../connection/connectDB")
 
 const PaymentSchema = db.define("PaymentSelfserves", {
-    amount: {
+  amount: {
     type: Sequelize.NUMBER,
   },
   payerName: {
@@ -36,6 +36,15 @@ const PaymentSchema = db.define("PaymentSelfserves", {
     type: Sequelize.STRING,
   },
   ticket_type_account_id: {
+    type: Sequelize.NUMBER,
+  },
+  itemName: {
+    type: Sequelize.STRING,
+  },
+  itemCode: {
+    type: Sequelize.STRING,
+  },
+  paymentStatus: {
     type: Sequelize.NUMBER,
   },
 });
