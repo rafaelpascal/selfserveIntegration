@@ -8,7 +8,7 @@ require("dotenv").config();
 const Logs = require("../models/Logs")
 const paymentselfserves = require("../models/Payments")
 
-// GENERATING ACCOUNT FOR PAYMENT
+// GENERATING ACCOUNT FOR PAYMENT FUNCTION
 const SelfServe = async (req, res) => {
     const IP = req.headers['x-real-ip'] || req.socket.remoteAddress;
     var authheader = req.headers.authorization;
